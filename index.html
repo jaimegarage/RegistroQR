@@ -1,41 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Escáner QR</title>
+  <title>Registro QR</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      background: #f0f0f0;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    #reader {
+      margin-top: 20px;
+    }
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-  <h2>Escanear código QR</h2>
-  <div id="reader" style="width: 300px;"></div>
+  <h2>Registro de Traslado</h2>
+
+  <label for="cedula">Cédula:</label>
+  <input type="text" id="cedula" placeholder="Ej: 12345678">
+
+  <label for="ubicacion">Ubicación:</label>
+  <input type="text" id="ubicacion" placeholder="Ej: Barrio Sucre">
+
+  <label for="id_jefe">ID Jefe:</label>
+  <input type="text" id="id_jefe" placeholder="Ej: JEF-001">
+
+  <button onclick="iniciarEscaneo()">Escanear Código QR</button>
+
+  <div id="reader" style="width: 100%; display: none;"></div>
+
   <p id="resultado"></p>
 
   <script>
-    const scriptURL = https://script.google.com/macros/s/AKfycbyOnFX5wF4VH2yQOlGhTwACNnbOyOXKAxJGzbY-l-SkMaxaAMbY7YnJ2nq7qoY21cjUFw/exec;
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyOnFX5wF4VH2yQOlGhTwACNnbOyOXKAxJGzbY-l-SkMaxaAMbY7YnJ2nq7qoY21cjUFw/exec";
 
-    function enviarQR(qrData) {
-      fetch(scriptURL, {
-        method: 'POST',
-        body: JSON.stringify({ qr: qrData }),
-        headers: { 'Content-Type': 'application/json' }
-      }).then(res => {
-        document.getElementById('resultado').innerText = "Registrado: " + qrData;
-      }).catch(err => {
-        console.error(err);
-        document.getElementById('resultado').innerText = "Error al registrar";
-      });
-    }
+    function iniciarEscaneo() {
+      const cedula = document.getElementById("cedula").value.trim();
+      const ubicacion = document.getElementById("ubicacion").value.trim();
+      const id_jefe = document.getElementById("id_jefe").value.trim();
 
-    const qrScanner = new Html5Qrcode("reader");
-
-    qrScanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      qrData => {
-        qrScanner.stop();
-        enviarQR(qrData);
+      if (!cedula || !ubicacion || !id_jefe) {
+        alert("Por favor completa todos los campos antes de escanear.");
+        return;
       }
-    );
+
+      document.getElementById("reader").style.display = "block";
+      const qrScanner = new Html5Qrcode("reader");
+
+      qrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        qrData => {
+          qrScanner.stop();
+          document.getElementById("reader").style.display = "none";
+
+          fetch(scriptURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              qr: qrData,
+              cedula: cedula,
+              ubicacion: ubicacion,
+              id_jefe: id_jefe
+            })
+          })
+          .then(res => res.text())
+          .then(msg => {
+            document.getElementById("resultado").innerText = "✔️ Registrado con éxito: " + qrData;
+          })
+          .catch(err => {
+            console.error(err);
+            document.getElementById("resultado").innerText = "❌ Error al registrar. Intenta de nuevo.";
+          });
+        }
+      );
+    }
   </script>
 </body>
 </html>
