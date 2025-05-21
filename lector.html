@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Escáner QR</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+  <h2>Escanear código QR</h2>
+  <div id="reader" style="width: 300px;"></div>
+  <p id="resultado"></p>
+
+  <script>
+    const scriptURL = "AQUÍ_VA_TU_URL_DEL_SCRIPT";
+
+    function enviarQR(qrData) {
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify({ qr: qrData }),
+        headers: { 'Content-Type': 'application/json' }
+      }).then(res => {
+        document.getElementById('resultado').innerText = "Registrado: " + qrData;
+      }).catch(err => {
+        console.error(err);
+        document.getElementById('resultado').innerText = "Error al registrar";
+      });
+    }
+
+    const qrScanner = new Html5Qrcode("reader");
+
+    qrScanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      qrData => {
+        qrScanner.stop();
+        enviarQR(qrData);
+      }
+    );
+  </script>
+</body>
+</html>
