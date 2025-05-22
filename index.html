@@ -190,31 +190,39 @@
           formData.append(entryQR, qrCodeMessage);
           formData.append(entryUbicacion, ubicacionActual);
 
-          fetch(formURL, {
-            method: "POST",
-            mode: "no-cors",
-            body: formData
-          }).then(() => {
-            document.getElementById("resultado").innerText = "✔️ Registrado con éxito.";
-            document.getElementById("otraVez").style.display = "block";
-          }).catch(() => {
-            // 📴 Sin conexión: guardar localmente
-            const registro = {
-              cedula,
-              id_jefe,
-              qr: qrCodeMessage,
-              ubicacion: ubicacionActual,
-              fecha: new Date().toISOString()
-            };
-            let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
-            registros.push(registro);
-            localStorage.setItem('registrosOffline', JSON.stringify(registros));
-
-            document.getElementById("resultado").innerText =
-              "📴 Sin conexión. El traslado fue guardado localmente.";
-          });
+          if (navigator.onLine) {
+            fetchConTimeout(formURL, {
+              method: "POST",
+              mode: "no-cors",
+              body: formData
+            }, 5000).then(() => {
+              document.getElementById("resultado").innerText = "✔️ Registrado con éxito.";
+              document.getElementById("otraVez").style.display = "block";
+            }).catch(() => {
+              guardarLocal(cedula, id_jefe, qrCodeMessage, ubicacionActual);
+            });
+          } else {
+            guardarLocal(cedula, id_jefe, qrCodeMessage, ubicacionActual);
+          }
         }
       );
+    }
+
+    function guardarLocal(cedula, id_jefe, qrCodeMessage, ubicacion) {
+      const registro = {
+        cedula,
+        id_jefe,
+        qr: qrCodeMessage,
+        ubicacion,
+        fecha: new Date().toISOString()
+      };
+      let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
+      registros.push(registro);
+      localStorage.setItem('registrosOffline', JSON.stringify(registros));
+
+      document.getElementById("resultado").innerText =
+        "📴 Sin conexión. El traslado fue guardado localmente.";
+      document.getElementById("otraVez").style.display = "block";
     }
 
     function enviarPendientes() {
@@ -238,6 +246,19 @@
           console.log("🔄 Registro sincronizado");
         }).catch(err => {
           console.error("❌ Error sincronizando:", err);
+        });
+      });
+    }
+
+    function fetchConTimeout(url, options, timeout = 5000) {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("Tiempo agotado")), timeout);
+        fetch(url, options).then(response => {
+          clearTimeout(timer);
+          resolve(response);
+        }).catch(err => {
+          clearTimeout(timer);
+          reject(err);
         });
       });
     }
