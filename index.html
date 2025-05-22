@@ -2,50 +2,96 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Registro QR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registro de Traslados</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f7fa;
+      margin: 0;
       padding: 20px;
-      max-width: 400px;
-      margin: auto;
-      background: #f0f0f0;
+      color: #333;
     }
+
+    .container {
+      max-width: 420px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
     h2 {
       text-align: center;
+      color: #2a2a2a;
     }
+
     input, button {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 12px;
+      margin-top: 12px;
       font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
     #reader {
       width: 100%;
-      margin-top: 10px;
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
     }
+
     #resultado {
       text-align: center;
-      margin-top: 15px;
+      margin-top: 16px;
       font-weight: bold;
+    }
+
+    #otraVez {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    #otraVez a {
+      text-decoration: none;
+      color: #007bff;
+    }
+
+    #otraVez a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <h2>Registro de Traslado</h2>
+  <div class="container">
+    <h2>Registro de Traslado</h2>
 
-  <input type="text" id="cedula" placeholder="Cédula" required>
-  <input type="text" id="id_jefe" placeholder="ID Jefe" required>
+    <input type="text" id="cedula" placeholder="Cédula">
+    <input type="text" id="id_jefe" placeholder="ID Jefe">
 
-  <button onclick="iniciarEscaneo()">Escanear QR y Registrar</button>
+    <button onclick="iniciarEscaneo()">Escanear QR y Registrar</button>
 
-  <div id="reader" style="display: none;"></div>
+    <div id="reader" style="display: none;"></div>
 
-  <p id="resultado"></p>
-  <div id="otraVez" style="display: none; text-align: center;">
-    <a href="" onclick="location.reload()">Registrar otro traslado</a>
+    <p id="resultado"></p>
+    <div id="otraVez" style="display: none;">
+      <a href="" onclick="location.reload()">Registrar otro traslado</a>
+    </div>
   </div>
 
   <script>
@@ -57,7 +103,6 @@
 
     let ubicacionActual = "";
 
-    // Obtener la ubicación al cargar
     navigator.geolocation.getCurrentPosition(
       pos => {
         const lat = pos.coords.latitude.toFixed(6);
@@ -108,6 +153,5 @@
       );
     }
   </script>
-
 </body>
 </html>
