@@ -29,7 +29,13 @@
     .header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       margin-bottom: 20px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
     }
 
     .header img {
@@ -42,6 +48,14 @@
       font-size: 18px;
       font-weight: normal;
       margin: 0;
+    }
+
+    .contador {
+      font-size: 14px;
+      background: #444;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: none;
     }
 
     .instrucciones {
@@ -114,33 +128,17 @@
       color: #7c4dff;
       font-size: 14px;
     }
-
-    #estadoSync {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      background: #2c2c2c;
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 30px;
-      font-size: 14px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-      cursor: pointer;
-      z-index: 1000;
-      transition: background 0.3s;
-    }
-
-    #estadoSync:hover {
-      background: #444;
-    }
   </style>
 </head>
 <body>
 
   <div class="wrapper">
     <div class="header">
-      <img src="https://jaymzdev.github.io/RegistroMovilizacion/Corazonnuevo.png" alt="Logo" />
-      <h1>Registro de Movilización</h1>
+      <div class="header-left">
+        <img src="https://jaymzdev.github.io/RegistroMovilizacion/Corazonnuevo.png" alt="Logo" />
+        <h1>Registro de Movilización</h1>
+      </div>
+      <div id="contadorSync" class="contador">📤 0</div>
     </div>
 
     <div class="instrucciones">
@@ -165,8 +163,6 @@
       <a href="" onclick="location.reload()">Registrar otro traslado</a>
     </div>
   </div>
-
-  <div id="estadoSync" onclick="forzarSincronizacion()">🟢 En línea</div>
 
   <script>
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSeMlTm89RoSK6dyGnUJ0TxSIed3n_lXElQFgP8dSMaub_WS_A/formResponse";
@@ -238,11 +234,11 @@
           formData.append(entryUbicacion, ubicacionActual);
 
           if (navigator.onLine) {
-            fetchConTimeout(formURL, {
+            fetch(formURL, {
               method: "POST",
               mode: "no-cors",
               body: formData
-            }, 5000).then(() => {
+            }).then(() => {
               mostrarExito("✔️ Registrado con éxito.");
             }).catch(() => {
               guardarLocal(cedula, id_jefe, qrCodeMessage, ubicacionActual);
@@ -255,18 +251,12 @@
     }
 
     function guardarLocal(cedula, id_jefe, qrCodeMessage, ubicacion) {
-      const registro = {
-        cedula,
-        id_jefe,
-        qr: qrCodeMessage,
-        ubicacion,
-        fecha: new Date().toISOString()
-      };
+      const registro = { cedula, id_jefe, qr: qrCodeMessage, ubicacion, fecha: new Date().toISOString() };
       let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
       registros.push(registro);
       localStorage.setItem('registrosOffline', JSON.stringify(registros));
-      actualizarEstadoSync();
       mostrarExito("📴 Sin conexión. El traslado fue guardado localmente.");
+      actualizarContadorSync();
     }
 
     function mostrarExito(mensaje) {
@@ -277,23 +267,10 @@
       document.getElementById("otraVez").style.display = "block";
     }
 
-    function fetchConTimeout(url, options, timeout = 5000) {
-      return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error("Tiempo agotado")), timeout);
-        fetch(url, options).then(response => {
-          clearTimeout(timer);
-          resolve(response);
-        }).catch(err => {
-          clearTimeout(timer);
-          reject(err);
-        });
-      });
-    }
-
     function enviarPendientes() {
       let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
       if (registros.length === 0) {
-        actualizarEstadoSync();
+        actualizarContadorSync();
         return;
       }
 
@@ -311,46 +288,33 @@
         }).then(() => {
           registros.splice(i, 1);
           localStorage.setItem('registrosOffline', JSON.stringify(registros));
-          actualizarEstadoSync();
-          console.log("🔄 Registro sincronizado");
+          actualizarContadorSync();
         }).catch(err => {
           console.error("❌ Error sincronizando:", err);
         });
       });
     }
 
-    function actualizarEstadoSync() {
-      const estado = document.getElementById("estadoSync");
+    function actualizarContadorSync() {
       const registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
+      const el = document.getElementById("contadorSync");
       if (registros.length > 0) {
-        estado.textContent = `📤 ${registros.length} por enviar`;
-        estado.style.background = "#444";
-      } else if (navigator.onLine) {
-        estado.textContent = "🟢 En línea";
-        estado.style.background = "#2c2c2c";
+        el.textContent = `📤 ${registros.length}`;
+        el.style.display = "inline-block";
       } else {
-        estado.textContent = "📴 Sin conexión";
-        estado.style.background = "#777";
-      }
-    }
-
-    function forzarSincronizacion() {
-      if (navigator.onLine) {
-        enviarPendientes();
-      } else {
-        alert("No hay conexión. Los datos se enviarán automáticamente cuando estés en línea.");
+        el.style.display = "none";
       }
     }
 
     window.addEventListener('online', () => {
       enviarPendientes();
-      actualizarEstadoSync();
+      actualizarContadorSync();
     });
 
-    window.addEventListener('offline', actualizarEstadoSync);
+    window.addEventListener('offline', actualizarContadorSync);
     document.addEventListener('DOMContentLoaded', () => {
       enviarPendientes();
-      actualizarEstadoSync();
+      actualizarContadorSync();
     });
   </script>
 
