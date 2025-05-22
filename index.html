@@ -13,52 +13,55 @@
       background-color: #121212;
       color: #ffffff;
       display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .wrapper {
+      background: #1e1e1e;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      max-width: 360px;
+      width: 90%;
     }
 
     .header {
       display: flex;
       align-items: center;
-      padding: 16px 24px;
-      background-color: #1e1e1e;
+      margin-bottom: 20px;
     }
 
     .header img {
-      width: 32px;
-      height: 32px;
-      margin-right: 12px;
+      width: 28px;
+      height: 28px;
+      margin-right: 10px;
     }
 
     .header h1 {
       font-size: 18px;
       font-weight: normal;
-    }
-
-    .container {
-      padding: 24px;
-      max-width: 420px;
-      margin: auto;
-      flex-grow: 1;
+      margin: 0;
     }
 
     .instrucciones {
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.6;
-      background-color: #1e1e1e;
+      margin-bottom: 20px;
+      background: #2b2b2b;
       padding: 16px;
       border-radius: 12px;
-      margin-bottom: 20px;
     }
 
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     input {
       width: 100%;
       padding: 12px;
-      font-size: 16px;
+      font-size: 15px;
       border-radius: 8px;
       border: none;
       background-color: #2c2c2c;
@@ -75,10 +78,9 @@
       background-color: #7c4dff;
       border: none;
       color: white;
-      font-size: 16px;
+      font-size: 15px;
       border-radius: 8px;
       font-weight: bold;
-      margin-top: 12px;
     }
 
     button:hover {
@@ -99,34 +101,27 @@
 
     #otraVez {
       text-align: center;
-      margin-top: 16px;
+      margin-top: 12px;
     }
 
     #otraVez a {
       text-decoration: none;
       color: #7c4dff;
-    }
-
-    footer {
-      text-align: center;
-      font-size: 13px;
-      color: #666;
-      padding: 20px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <img src="https://jaimegarage.github.io/RegistroQR/Corazonnuevo.png" alt="Logo" />
-    <h1>🟣 Registro de Movilización</h1>
-  </div>
+  <div class="wrapper">
+    <div class="header">
+      <img src="https://jaimegarage.github.io/RegistroQR/Corazonnuevo.png" alt="Logo" />
+      <h1>Registro de Movilización</h1>
+    </div>
 
-  <div class="container">
     <div class="instrucciones">
       🔹 Escribe la cédula del votante<br>
       🔹 Escribe el ID del jefe de comunidad<br>
-      🔹 Escanea el QR del conductor<br>
       🔹 Solo se registra una vez por traslado<br><br>
       ✅ Presiona <b>“Escanear QR y Registrar”</b>
     </div>
@@ -141,16 +136,11 @@
     <button onclick="iniciarEscaneo()">Escanear QR y Registrar</button>
 
     <div id="reader" style="display: none;"></div>
-
     <p id="resultado"></p>
     <div id="otraVez" style="display: none;">
       <a href="" onclick="location.reload()">Registrar otro traslado</a>
     </div>
   </div>
-
-  <footer>
-    Mérida 2025 – Registro de Movilización
-  </footer>
 
   <script>
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSeMlTm89RoSK6dyGnUJ0TxSIed3n_lXElQFgP8dSMaub_WS_A/formResponse";
