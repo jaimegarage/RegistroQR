@@ -139,9 +139,6 @@
       font-size: 14px;
     }
   </style>
-  <style>
-    /* ... (Todo el estilo ya incluido anteriormente) ... */
-  </style>
 </head>
 <body>
 
@@ -281,11 +278,21 @@
 
     // Banner Android
     let deferredPrompt;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById("installBanner").style.display = "block";
-    });
+function esIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function esPWA() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  if (esIOS() || esPWA()) return; // ❌ No mostrar en iOS ni si ya está instalada
+
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("installBanner").style.display = "block";
+});
 
     function instalarApp() {
       if (deferredPrompt) {
