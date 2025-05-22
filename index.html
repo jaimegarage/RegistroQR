@@ -117,6 +117,26 @@
       color: #7c4dff;
       font-size: 14px;
     }
+
+    /* Ícono flotante de estado */
+    #estadoSync {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: #2c2c2c;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 30px;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      cursor: pointer;
+      z-index: 1000;
+      transition: background 0.3s;
+    }
+
+    #estadoSync:hover {
+      background: #444;
+    }
   </style>
 </head>
 <body>
@@ -150,6 +170,8 @@
     </div>
   </div>
 
+  <div id="estadoSync" onclick="forzarSincronizacion()">🟢 En línea</div>
+
   <script>
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSeMlTm89RoSK6dyGnUJ0TxSIed3n_lXElQFgP8dSMaub_WS_A/formResponse";
     const entryCedula = "entry.668942367";
@@ -157,7 +179,7 @@
     const entryIDJefe = "entry.817016646";
     const entryQR = "entry.256825743";
 
-    let ubicacionActual = "NO DISPONIBLE"; // Valor por defecto
+    let ubicacionActual = "NO DISPONIBLE";
 
     async function solicitarUbicacion() {
       return new Promise((resolve) => {
@@ -201,7 +223,7 @@
         return;
       }
 
-      await solicitarUbicacion(); // actualiza ubicacionActual
+      await solicitarUbicacion();
 
       document.getElementById("reader").style.display = "block";
 
@@ -247,6 +269,7 @@
       let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
       registros.push(registro);
       localStorage.setItem('registrosOffline', JSON.stringify(registros));
+      actualizarEstadoSync();
       mostrarExito("📴 Sin conexión. El traslado fue guardado localmente.");
     }
 
@@ -256,31 +279,6 @@
       boton.disabled = true;
       boton.innerText = "✔ Registrado";
       document.getElementById("otraVez").style.display = "block";
-    }
-
-    function enviarPendientes() {
-      let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
-      if (registros.length === 0) return;
-
-      registros.forEach((r, i) => {
-        const formData = new FormData();
-        formData.append(entryCedula, r.cedula);
-        formData.append(entryIDJefe, r.id_jefe);
-        formData.append(entryQR, r.qr);
-        formData.append(entryUbicacion, r.ubicacion);
-
-        fetch(formURL, {
-          method: "POST",
-          mode: "no-cors",
-          body: formData
-        }).then(() => {
-          registros.splice(i, 1);
-          localStorage.setItem('registrosOffline', JSON.stringify(registros));
-          console.log("🔄 Registro sincronizado");
-        }).catch(err => {
-          console.error("❌ Error sincronizando:", err);
-        });
-      });
     }
 
     function fetchConTimeout(url, options, timeout = 5000) {
@@ -296,8 +294,68 @@
       });
     }
 
-    window.addEventListener('online', enviarPendientes);
-    document.addEventListener('DOMContentLoaded', enviarPendientes);
+    function enviarPendientes() {
+      let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
+      if (registros.length === 0) {
+        actualizarEstadoSync();
+        return;
+      }
+
+      registros.forEach((r, i) => {
+        const formData = new FormData();
+        formData.append(entryCedula, r.cedula);
+        formData.append(entryIDJefe, r.id_jefe);
+        formData.append(entryQR, r.qr);
+        formData.append(entryUbicacion, r.ubicacion);
+
+        fetch(formURL, {
+          method: "POST",
+          mode: "no-cors",
+          body: formData
+        }).then(() => {
+          registros.splice(i, 1);
+          localStorage.setItem('registrosOffline', JSON.stringify(registros));
+          actualizarEstadoSync();
+          console.log("🔄 Registro sincronizado");
+        }).catch(err => {
+          console.error("❌ Error sincronizando:", err);
+        });
+      });
+    }
+
+    function actualizarEstadoSync() {
+      const estado = document.getElementById("estadoSync");
+      const registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
+      if (registros.length > 0) {
+        estado.textContent = `📤 ${registros.length} por enviar`;
+        estado.style.background = "#444";
+      } else if (navigator.onLine) {
+        estado.textContent = "🟢 En línea";
+        estado.style.background = "#2c2c2c";
+      } else {
+        estado.textContent = "📴 Sin conexión";
+        estado.style.background = "#777";
+      }
+    }
+
+    function forzarSincronizacion() {
+      if (navigator.onLine) {
+        enviarPendientes();
+      } else {
+        alert("No hay conexión. Los datos se enviarán automáticamente cuando estés en línea.");
+      }
+    }
+
+    window.addEventListener('online', () => {
+      enviarPendientes();
+      actualizarEstadoSync();
+    });
+
+    window.addEventListener('offline', actualizarEstadoSync);
+    document.addEventListener('DOMContentLoaded', () => {
+      enviarPendientes();
+      actualizarEstadoSync();
+    });
   </script>
 
   <script>
