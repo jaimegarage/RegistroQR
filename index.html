@@ -158,6 +158,7 @@
     <div class="form-group">
       <input type="text" id="cedula" placeholder="Cédula del votante" />
     </div>
+
     <div class="form-group">
       <input type="text" id="id_jefe" placeholder="ID del jefe de comunidad" />
     </div>
@@ -166,21 +167,10 @@
 
     <div id="reader" style="display: none;"></div>
     <p id="resultado"></p>
+
     <div id="otraVez" style="display: none;">
       <a href="" onclick="location.reload()">Registrar otro traslado</a>
     </div>
-
-    <div id="iosInstructions">
-      📱 Para instalar esta app:<br>
-      1. Abre este sitio en Safari<br>
-      2. Toca el ícono de compartir (cuadro con flecha)<br>
-      3. Selecciona <b>“Agregar a pantalla de inicio”</b>
-    </div>
-  </div>
-
-  <div id="installBanner">
-    📲 Instala esta app para un mejor acceso
-    <button onclick="instalarApp()">Instalar</button>
   </div>
 
   <script>
@@ -189,6 +179,7 @@
     const entryUbicacion = "entry.981761500";
     const entryIDJefe = "entry.817016646";
     const entryQR = "entry.256825743";
+
     let ubicacionActual = "NO DISPONIBLE";
 
     navigator.geolocation.getCurrentPosition(
@@ -245,7 +236,11 @@
     }
 
     function guardarLocal(cedula, id_jefe, qr) {
-      const data = { cedula, id_jefe, qr, ubicacion: ubicacionActual, fecha: new Date().toISOString() };
+      const data = {
+        cedula, id_jefe, qr,
+        ubicacion: ubicacionActual,
+        fecha: new Date().toISOString()
+      };
       let registros = JSON.parse(localStorage.getItem("registrosOffline")) || [];
       registros.push(data);
       localStorage.setItem("registrosOffline", JSON.stringify(registros));
@@ -276,51 +271,8 @@
       });
     }
 
-    // Banner Android
-    let deferredPrompt;
-function esIOS() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
+    document.addEventListener("DOMContentLoaded", enviarPendientes);
 
-function esPWA() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-}
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  if (esIOS() || esPWA()) return; // ❌ No mostrar en iOS ni si ya está instalada
-
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById("installBanner").style.display = "block";
-});
-
-    function instalarApp() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-          deferredPrompt = null;
-          document.getElementById("installBanner").style.display = "none";
-        });
-      }
-    }
-
-    // iOS detection
-    function esIOS() {
-      return /iphone|ipad|ipod/i.test(navigator.userAgent);
-    }
-
-    function esPWA() {
-      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      if (esIOS() && !esPWA()) {
-        document.getElementById("iosInstructions").style.display = "block";
-      }
-      enviarPendientes();
-    });
-
-    // Registrar service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(reg => console.log("✅ SW registrado", reg.scope))
