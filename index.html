@@ -1,47 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registro de Traslados</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f5f7fa;
       margin: 0;
-      padding: 20px;
-      color: #333;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #e9ecef;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
 
-    .container {
-      max-width: 420px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    .card {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      padding: 24px;
+      margin: 20px;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
     h2 {
       text-align: center;
-      color: #2a2a2a;
+      color: #333;
+      font-size: 22px;
+      margin-bottom: 20px;
     }
 
-    input, button {
+    label {
+      font-size: 14px;
+      margin-bottom: 4px;
+      display: block;
+      color: #555;
+    }
+
+    input {
       width: 100%;
-      padding: 12px;
-      margin-top: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
       font-size: 16px;
-      border: 1px solid #ccc;
       border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
 
     button {
+      width: 100%;
+      padding: 14px;
       background-color: #28a745;
+      border: none;
       color: white;
+      font-size: 16px;
+      border-radius: 8px;
       font-weight: bold;
-      cursor: pointer;
     }
 
     button:hover {
@@ -49,45 +68,41 @@
     }
 
     #reader {
-      width: 100%;
       margin-top: 20px;
-      border-radius: 8px;
-      overflow: hidden;
+      width: 100%;
     }
 
     #resultado {
-      text-align: center;
       margin-top: 16px;
+      text-align: center;
       font-weight: bold;
+      color: green;
     }
 
     #otraVez {
       text-align: center;
-      margin-top: 12px;
+      margin-top: 16px;
     }
 
     #otraVez a {
       text-decoration: none;
       color: #007bff;
-    }
-
-    #otraVez a:hover {
-      text-decoration: underline;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-
-  <div class="container">
+  <div class="card">
     <h2>Registro de Traslado</h2>
+    <label for="cedula">Cédula</label>
+    <input type="text" id="cedula" placeholder="Ej: 12345678" />
 
-    <input type="text" id="cedula" placeholder="Cédula">
-    <input type="text" id="id_jefe" placeholder="ID Jefe">
+    <label for="id_jefe">ID Jefe</label>
+    <input type="text" id="id_jefe" placeholder="Ej: JEF-001" />
 
     <button onclick="iniciarEscaneo()">Escanear QR y Registrar</button>
 
     <div id="reader" style="display: none;"></div>
-
     <p id="resultado"></p>
     <div id="otraVez" style="display: none;">
       <a href="" onclick="location.reload()">Registrar otro traslado</a>
