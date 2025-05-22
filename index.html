@@ -86,7 +86,12 @@
       font-weight: bold;
     }
 
-    button:hover {
+    button:disabled {
+      background-color: #444;
+      cursor: not-allowed;
+    }
+
+    button:hover:enabled {
       background-color: #651fff;
     }
 
@@ -136,7 +141,7 @@
       <input type="text" id="id_jefe" placeholder="ID del jefe de comunidad" />
     </div>
 
-    <button onclick="iniciarEscaneo()">Escanear QR y Registrar</button>
+    <button id="btnRegistrar" onclick="iniciarEscaneo()">Escanear QR y Registrar</button>
 
     <div id="reader" style="display: none;"></div>
     <p id="resultado"></p>
@@ -196,8 +201,7 @@
               mode: "no-cors",
               body: formData
             }, 5000).then(() => {
-              document.getElementById("resultado").innerText = "✔️ Registrado con éxito.";
-              document.getElementById("otraVez").style.display = "block";
+              mostrarExito("✔️ Registrado con éxito.");
             }).catch(() => {
               guardarLocal(cedula, id_jefe, qrCodeMessage, ubicacionActual);
             });
@@ -219,9 +223,14 @@
       let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
       registros.push(registro);
       localStorage.setItem('registrosOffline', JSON.stringify(registros));
+      mostrarExito("📴 Sin conexión. El traslado fue guardado localmente.");
+    }
 
-      document.getElementById("resultado").innerText =
-        "📴 Sin conexión. El traslado fue guardado localmente.";
+    function mostrarExito(mensaje) {
+      const boton = document.getElementById("btnRegistrar");
+      document.getElementById("resultado").innerText = mensaje;
+      boton.disabled = true;
+      boton.innerText = "✔ Registrado";
       document.getElementById("otraVez").style.display = "block";
     }
 
