@@ -198,18 +198,60 @@
             document.getElementById("resultado").innerText = "✔️ Registrado con éxito.";
             document.getElementById("otraVez").style.display = "block";
           }).catch(() => {
-            document.getElementById("resultado").innerText = "❌ Error al registrar.";
+            // 📴 Sin conexión: guardar localmente
+            const registro = {
+              cedula,
+              id_jefe,
+              qr: qrCodeMessage,
+              ubicacion: ubicacionActual,
+              fecha: new Date().toISOString()
+            };
+            let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
+            registros.push(registro);
+            localStorage.setItem('registrosOffline', JSON.stringify(registros));
+
+            document.getElementById("resultado").innerText =
+              "📴 Sin conexión. El traslado fue guardado localmente.";
           });
         }
       );
     }
+
+    function enviarPendientes() {
+      let registros = JSON.parse(localStorage.getItem('registrosOffline')) || [];
+      if (registros.length === 0) return;
+
+      registros.forEach((r, i) => {
+        const formData = new FormData();
+        formData.append(entryCedula, r.cedula);
+        formData.append(entryIDJefe, r.id_jefe);
+        formData.append(entryQR, r.qr);
+        formData.append(entryUbicacion, r.ubicacion);
+
+        fetch(formURL, {
+          method: "POST",
+          mode: "no-cors",
+          body: formData
+        }).then(() => {
+          registros.splice(i, 1);
+          localStorage.setItem('registrosOffline', JSON.stringify(registros));
+          console.log("🔄 Registro sincronizado");
+        }).catch(err => {
+          console.error("❌ Error sincronizando:", err);
+        });
+      });
+    }
+
+    window.addEventListener('online', enviarPendientes);
+    document.addEventListener('DOMContentLoaded', enviarPendientes);
   </script>
+
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
-      .catch(err => console.error('❌ Error al registrar SW:', err));
-  }
-</script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+        .catch(err => console.error('❌ Error al registrar SW:', err));
+    }
+  </script>
 </body>
 </html>
